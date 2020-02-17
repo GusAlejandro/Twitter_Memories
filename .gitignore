@@ -2,3 +2,5 @@
 *.pyc
 *~
 *.idea/
+#.gitignore
+.DS_Store
