@@ -4,3 +4,4 @@
 *.idea/
 #.gitignore
 .DS_Store
+test.db

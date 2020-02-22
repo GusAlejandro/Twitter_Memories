@@ -2,6 +2,7 @@ from flask_restful import Resource
 from flask import request,jsonify
 from twittermemories.models import User, UserSchema
 from twittermemories import db
+from sqlalchemy.exc import IntegrityError
 
 
 class HelloWorld(Resource):
@@ -15,14 +16,17 @@ class RegisterUser(Resource):
         return {'word':'hee'}
 
     def post(self):
-        # Catch username already taken error
         username = request.values.get('username')
         password = request.values.get('password')
         user_schema = UserSchema()
-        new_user = User(username=username, raw_password=password)
-        db.session.add(new_user)
-        db.session.commit()
-        return jsonify(user_schema.dump(new_user))
+        try:
+            new_user = User(username=username, raw_password=password)
+            db.session.add(new_user)
+            db.session.commit()
+            return jsonify(user_schema.dump(new_user))
+        except IntegrityError:
+            db.session.rollback()
+            return jsonify({'Error': "Username is taken already"})
 
 
 class LoginUser(Resource):
@@ -34,4 +38,4 @@ class LoginUser(Resource):
         if user.check_password(password):
             return { 'response' : user.username + ' is now logged in'}
         else:
-            return { 'response': 'INCORRECT PASSWORD'}
+            return { 'response': 'INCORRECT USERNAME + PASSWORD COMBINATION'}

@@ -1,7 +1,10 @@
 from twittermemories import db, bcrypt, ma
 
 # TODO: Finalize model for User Class
+
+
 class User(db.Model):
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     hashedPassword = db.Column(db.String(128))
