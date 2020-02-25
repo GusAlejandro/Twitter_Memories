@@ -26,18 +26,28 @@ class User(db.Model):
     def check_password(self, raw_password):
         return bcrypt.check_password_hash(self.hashedPassword, raw_password)
 
-    def encode_auth_token(self, user_id):
-        payload = {
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, minutes=10),
-            'iat': datetime.datetime.utcnow(),
-            'sub': user_id
-        }
-        return jwt.encode(payload, app.config.get('SECRET_KEY'), algorithm='HS256')
+    @staticmethod
+    def encode_auth_token(user_id, token_type):
+        if token_type == 'access':
+            payload = {
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=0, minutes=10),
+                'iat': datetime.datetime.utcnow(),
+                'sub': user_id,
+                'token_type': 'access'
+            }
+            return jwt.encode(payload, app.config.get('SECRET_KEY'), algorithm='HS256')
+        elif token_type == 'refresh':
+            payload = {
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(days=5),
+                'iat': datetime.datetime.utcnow(),
+                'sub': user_id,
+                'token_type': 'refresh'
+            }
+            return jwt.encode(payload, app.config.get('SECRET_KEY'), algorithm='HS256')
 
     @staticmethod
     def decode_auth_token(auth_token):
-        # TODO: refactor to just return the decoded payload
-        return jwt.decode(auth_token, app.config.get('SECRET_KEY'))['sub']
+        return jwt.decode(auth_token, app.config.get('SECRET_KEY'))
 
 
 class UserSchema(ma.SQLAlchemySchema):

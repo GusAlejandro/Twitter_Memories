@@ -12,9 +12,10 @@ db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 ma = Marshmallow(app)
 
-from twittermemories.views import RegisterUser, LoginUser, Feed
+from twittermemories.views import RegisterUser, LoginUser, Feed, Refresh
 
 # Endpoints
 api.add_resource(LoginUser, '/LoginUser')
 api.add_resource(RegisterUser, '/RegisterUser')
 api.add_resource(Feed, '/Feed')
+api.add_resource(Refresh, '/refresh')
