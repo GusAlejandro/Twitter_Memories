@@ -40,7 +40,7 @@ def refresh_token_required(fn):
                 return jsonify({
                     'status': 'wrong token type'
                 })
-        except ExpiredSignatureError:
+        except (ExpiredSignatureError, UnicodeDecodeError, DecodeError):
             # tell client the access token has expired, force a log out. User must login in again
             return jsonify({
                 'status': 'expired refresh token, user is logged out'
