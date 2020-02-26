@@ -5,3 +5,5 @@
 #.gitignore
 .DS_Store
 test.db
+gcp_account.json
+twittermemories/app_config.py
