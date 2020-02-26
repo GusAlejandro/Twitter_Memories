@@ -2,6 +2,7 @@ from jwt import ExpiredSignatureError, DecodeError
 from functools import wraps
 from twittermemories.models import User
 from flask import request, g, jsonify
+from twittermemories.app_config import Config
 
 
 def access_token_required(fn):
@@ -46,4 +47,8 @@ def refresh_token_required(fn):
                 'status': 'expired refresh token, user is logged out'
             })
     return wrapper
+
+
+def is_allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTENSIONS
 
