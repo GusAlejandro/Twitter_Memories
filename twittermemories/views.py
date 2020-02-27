@@ -66,6 +66,9 @@ class Feed(Resource):
 
 
 class FileUpload(Resource):
+    """
+    NOTE: Consider options like uploading directly from client to avoid temporarily storing the file on the resource server
+    """
 
     @access_token_required
     def post(self):
