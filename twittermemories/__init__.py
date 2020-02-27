@@ -18,8 +18,8 @@ storage_client = storage.Client.from_service_account_json(GCPConfig.GCP_JSON)
 from twittermemories.views import RegisterUser, LoginUser, Feed, Refresh, FileUpload
 
 # Endpoints
-api.add_resource(LoginUser, '/LoginUser')
-api.add_resource(RegisterUser, '/RegisterUser')
-api.add_resource(Feed, '/Feed')
+api.add_resource(LoginUser, '/login')
+api.add_resource(RegisterUser, '/register')
+api.add_resource(Feed, '/feed')
 api.add_resource(Refresh, '/refresh')
 api.add_resource(FileUpload, '/upload')

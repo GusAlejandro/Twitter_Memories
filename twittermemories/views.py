@@ -32,7 +32,7 @@ class LoginUser(Resource):
         password = request.values.get('password')
         user = User.query.filter_by(username=username).first()
         if user.check_password(password):
-            # if username/password combo is valid, generate token
+            # if username/password combo is valid, generate tokens
             access_token = User.encode_auth_token(user.user_id, 'access')
             # TODO: Persist refresh token in db to handle logout server-side as well (ideally we would have entire seperate auth server)
             refresh_token = User.encode_auth_token(user.user_id, 'refresh')
@@ -69,7 +69,6 @@ class FileUpload(Resource):
 
     @access_token_required
     def post(self):
-        buckets = list(storage_client.list_buckets())
         if 'file' not in request.files:
             return jsonify({
                 'error': 'File not received'
@@ -85,13 +84,17 @@ class FileUpload(Resource):
             filename = secure_filename(file.filename)
             file.save(os.path.join(Config.UPLOAD_FOLDER, filename))
 
-            #uplaod file to GCP
+            # upload file to GCP
             bucket = storage_client.bucket(GCPConfig.GCP_STORAGE_BUCKET)
             blob = bucket.blob(filename)
             blob.upload_from_filename(os.path.join(Config.UPLOAD_FOLDER, filename))
 
-            # TODO: set user file_status to 1
-            # TODO: delete the locally stored file
+            # update user file status
+            user = User.query.filter_by(user_id=g.user).first()
+            user.file_status = 1
+            db.session.commit()
+
+            os.remove(os.path.join(Config.UPLOAD_FOLDER, filename))
 
             return jsonify({
                 'status': 'file uploaded successfully'
