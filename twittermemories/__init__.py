@@ -1,11 +1,12 @@
 from flask import Flask
 from flask_restful import Api
 from flask_sqlalchemy import SQLAlchemy
-from twittermemories.app_config import Config
+from configuration.app_config import Config
 from flask_bcrypt import Bcrypt
 from flask_marshmallow import Marshmallow
 from google.cloud import storage
-from twittermemories.app_config import GCPConfig
+from configuration.app_config import GCPConfig
+
 
 app = Flask(__name__)
 app.config.from_object(Config)

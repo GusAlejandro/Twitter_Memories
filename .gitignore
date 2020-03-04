@@ -6,5 +6,8 @@
 .DS_Store
 test.db
 gcp_account.json
-twittermemories/app_config.py
+configuration/app_config.py
 twittermemories/TEMP_TWEET_STORAGE
+tweet.js
+archive.json
+file_test.py

@@ -5,7 +5,7 @@ from twittermemories.models import User, UserSchema
 from twittermemories import db, storage_client
 from sqlalchemy.exc import IntegrityError
 from twittermemories.view_helper_funcs import access_token_required, refresh_token_required, is_allowed_file
-from twittermemories.app_config import GCPConfig, Config
+from configuration.app_config import GCPConfig, Config
 from werkzeug.utils import secure_filename
 
 
