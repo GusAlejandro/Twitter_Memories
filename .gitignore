@@ -5,7 +5,7 @@
 #.gitignore
 .DS_Store
 test.db
-gcp_account.json
+configuration/gcp_account.json
 configuration/app_config.py
 twittermemories/TEMP_TWEET_STORAGE
 tweet.js
