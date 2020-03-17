@@ -1,7 +1,11 @@
-from twittermemories import db, bcrypt, ma, app
+from flask_sqlalchemy import SQLAlchemy
+from twittermemories import bcrypt, ma
+from configuration.app_config import DatabaseConfig
 import datetime
 import jwt
 import uuid
+
+db = SQLAlchemy()
 
 
 class User(db.Model):
@@ -35,7 +39,7 @@ class User(db.Model):
                 'sub': user_id,
                 'token_type': 'access'
             }
-            return jwt.encode(payload, app.config.get('SECRET_KEY'), algorithm='HS256')
+            return jwt.encode(payload, DatabaseConfig.SECRET_KEY, algorithm='HS256')
         elif token_type == 'refresh':
             payload = {
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(days=5),
@@ -43,11 +47,11 @@ class User(db.Model):
                 'sub': user_id,
                 'token_type': 'refresh'
             }
-            return jwt.encode(payload, app.config.get('SECRET_KEY'), algorithm='HS256')
+            return jwt.encode(payload, DatabaseConfig.SECRET_KEY, algorithm='HS256')
 
     @staticmethod
     def decode_auth_token(auth_token):
-        return jwt.decode(auth_token, app.config.get('SECRET_KEY'))
+        return jwt.decode(auth_token, DatabaseConfig.SECRET_KEY)
 
 
 class UserSchema(ma.SQLAlchemySchema):
@@ -57,3 +61,5 @@ class UserSchema(ma.SQLAlchemySchema):
     user_id = ma.auto_field()
     username = ma.auto_field()
     file_status = ma.auto_field()
+
+

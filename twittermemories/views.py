@@ -1,12 +1,16 @@
 import os
 from flask_restful import Resource
 from flask import request, g, jsonify
-from twittermemories.models import User, UserSchema
-from twittermemories import db, storage_client
+from twittermemories.models import User, UserSchema, db
+from google.cloud import storage
+from configuration.app_config import GCPConfig
 from sqlalchemy.exc import IntegrityError
 from twittermemories.view_helper_funcs import access_token_required, refresh_token_required, is_allowed_file
 from configuration.app_config import GCPConfig, Config
 from werkzeug.utils import secure_filename
+
+
+storage_client = storage.Client.from_service_account_json(GCPConfig.GCP_JSON)
 
 
 class RegisterUser(Resource):
@@ -102,3 +106,4 @@ class FileUpload(Resource):
             return jsonify({
                 'status': 'file uploaded successfully'
             })
+
