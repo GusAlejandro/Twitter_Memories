@@ -11,3 +11,5 @@ twittermemories/TEMP_TWEET_STORAGE
 tweet.js
 archive.json
 file_test.py
+db_prod_init.py
+twittermemories/testing.db

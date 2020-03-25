@@ -1,13 +1,13 @@
 from flask import Flask
 from flask_restful import Api
-from configuration.app_config import Config
+from configuration.app_config import Config, TestConfig
 from flask_bcrypt import Bcrypt
 from flask_marshmallow import Marshmallow
 
 
 #
 # app = Flask(__name__)
-# app.config.from_object(Config)
+# app.con  fig.from_object(Config)
 # api = Api(app)
 # # db = SQLAlchemy(app)
 # bcrypt = Bcrypt(app)
