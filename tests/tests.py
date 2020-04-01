@@ -2,7 +2,7 @@ import unittest
 from configuration.app_config import TestConfig
 from twittermemories import create_app
 from twittermemories.models import db
-
+import io
 
 # TEST_DB = 'testing.db'
 
@@ -30,6 +30,13 @@ class TestViews(unittest.TestCase):
         response = self.app.post('/login', data={'username': 'bob', 'password': '123pass'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual('access_token' in response.get_json() and 'refresh_token' in response.get_json(), True)
+
+    def test_archvie_uplaod(self):
+        self.app.post('/register', data={'username': 'bob', 'password': '123pass'})
+        response = self.app.post('/login', data={'username': 'bob', 'password': '123pass'})
+        access_token = response.get_json()['access_token']
+        upload_response = self.app.post('/upload', data= dict(file=(io.BytesIO(b"this is a test"), 'testtweets.js')), headers={'Authorization': 'Bearer ' + access_token})
+        self.assertEqual('status' in upload_response.get_json(), True)
 
 
 if __name__ == '__main__':

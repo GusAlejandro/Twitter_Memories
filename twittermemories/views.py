@@ -74,6 +74,8 @@ class FileUpload(Resource):
     NOTE: Consider options like uploading directly from client to avoid temporarily storing the file on the resource server
     """
 
+    # TODO: Currently testing and prod are using the same Google Cloud Storage Bucket
+
     @access_token_required
     def post(self):
         if 'file' not in request.files:

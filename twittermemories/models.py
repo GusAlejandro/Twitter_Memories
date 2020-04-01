@@ -51,7 +51,7 @@ class User(db.Model):
 
     @staticmethod
     def decode_auth_token(auth_token):
-        return jwt.decode(auth_token, DatabaseConfig.SECRET_KEY)
+        return jwt.decode(auth_token, DatabaseConfig.SECRET_KEY, algorithms='HS256')
 
 
 class UserSchema(ma.SQLAlchemySchema):
