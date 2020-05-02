@@ -8,12 +8,33 @@ import uuid
 db = SQLAlchemy()
 
 
-class User(db.Model):
+class Tweet(db.Model):
+    __tablename__ = 'Tweet'
+    tweet_id = db.Column(db.String, primary_key=True)
+    tweet_text = db.Column(db.Text)
+    user_id = db.Column(db.String(128), db.ForeignKey('User.user_id'), index=True)
+    month = db.Column(db.Integer, index=True)
+    day = db.Column(db.Integer)
 
+    def __repr__(self):
+        return self.user_id + ' tweed id: ' + self.tweet_id + ' month ' + self.month + ' day ' + self.day
+
+
+class TweetSchema(ma.SQLAlchemySchema):
+    class Meta:
+        model = Tweet
+
+    tweet_id = ma.auto_field()
+    month = ma.auto_field()
+
+
+class User(db.Model):
+    __tablename__ = 'User'
     user_id = db.Column(db.String(128), primary_key=True, unique=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     hashedPassword = db.Column(db.String(128))
-    file_status = db.Column(db.Integer(), default=0)
+    file_status = db.Column(db.Integer, default=0)
+    tweets = db.relationship('Tweet', backref='user', lazy='dynamic')
 
     def __init__(self, raw_password, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -61,5 +82,4 @@ class UserSchema(ma.SQLAlchemySchema):
     user_id = ma.auto_field()
     username = ma.auto_field()
     file_status = ma.auto_field()
-
 

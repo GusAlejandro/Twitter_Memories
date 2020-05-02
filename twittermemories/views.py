@@ -1,7 +1,7 @@
 import os
 from flask_restful import Resource
 from flask import request, g, jsonify
-from twittermemories.models import User, UserSchema, db
+from twittermemories.models import User, UserSchema, Tweet, TweetSchema, db
 from google.cloud import storage
 from configuration.app_config import GCPConfig
 from sqlalchemy.exc import IntegrityError
