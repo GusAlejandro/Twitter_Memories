@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from twittermemories.view_helper_funcs import access_token_required, refresh_token_required, is_allowed_file
 from configuration.app_config import GCPConfig, Config
 from werkzeug.utils import secure_filename
+from celeryworker.tasks import process_tweets
 
 
 storage_client = storage.Client.from_service_account_json(GCPConfig.GCP_JSON)
@@ -103,7 +104,11 @@ class FileUpload(Resource):
             user.file_status = 1
             db.session.commit()
 
+            # delete file from temp file storage
             os.remove(os.path.join(Config.UPLOAD_FOLDER, filename))
+
+            # queue archive processing task
+            process_tweets.delay(g.user)
 
             return jsonify({
                 'status': 'file uploaded successfully'

@@ -35,7 +35,7 @@ class TestViews(unittest.TestCase):
         self.app.post('/register', data={'username': 'bob', 'password': '123pass'})
         response = self.app.post('/login', data={'username': 'bob', 'password': '123pass'})
         access_token = response.get_json()['access_token']
-        upload_response = self.app.post('/upload', data= dict(file=(io.BytesIO(b"this is a test"), 'testtweets.js')), headers={'Authorization': 'Bearer ' + access_token})
+        upload_response = self.app.post('/upload', data= dict(file=(io.BytesIO(b"this is a test"), 'test_tweet_archive.js')), headers={'Authorization': 'Bearer ' + access_token})
         self.assertEqual('status' in upload_response.get_json(), True)
 
 

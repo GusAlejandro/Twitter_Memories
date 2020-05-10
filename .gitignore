@@ -11,6 +11,7 @@ twittermemories/TEMP_TWEET_STORAGE
 tweet.js
 archive.json
 file_test.py
-db_prod_init.py
 twittermemories/testing.db
-tests/testtweets.js
+tests/test_tweet_archive.js
+celeryworker/WORKER_TEMP_TWEET_STORAGE
+test_archive.js

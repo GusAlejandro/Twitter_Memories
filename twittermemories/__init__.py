@@ -5,25 +5,6 @@ from flask_bcrypt import Bcrypt
 from flask_marshmallow import Marshmallow
 
 
-#
-# app = Flask(__name__)
-# app.con  fig.from_object(Config)
-# api = Api(app)
-# # db = SQLAlchemy(app)
-# bcrypt = Bcrypt(app)
-# ma = Marshmallow(app)
-# storage_client = storage.Client.from_service_account_json(GCPConfig.GCP_JSON)
-#
-# from twittermemories.views import RegisterUser, LoginUser, Feed, Refresh, FileUpload
-#
-# # Endpoints
-# api.add_resource(LoginUser, '/login')
-# api.add_resource(RegisterUser, '/register')
-# api.add_resource(Feed, '/feed')
-# api.add_resource(Refresh, '/refresh')
-# api.add_resource(FileUpload, '/upload')
-
-
 def create_app(config_file):
     app = Flask(__name__)
     app.config.from_object(config_file)
