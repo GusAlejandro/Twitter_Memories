@@ -62,6 +62,7 @@ class Refresh(Resource):
 
 
 class Feed(Resource):
+    # TODO: Update to now return the tweets instead of the file status
 
     @access_token_required
     def get(self):

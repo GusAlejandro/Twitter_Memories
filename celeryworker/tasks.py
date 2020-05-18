@@ -53,12 +53,12 @@ def process_tweets(user_id):
         fileinput.close()
 
         # traverse tweets, pull out relevant info and persist instances
+        curr_user = User.query.filter_by(user_id=user_id).first()
         tweetList = json.load(open(CeleryConfig.TEMPSTORAGE + user_id + '.json', 'r'))
         for tweet in tweetList:
             dateString = tweet['tweet']['created_at']
             if is_valid_date(dateString):
                 # get current user
-                curr_user = User.query.filter_by(user_id=user_id).first()
                 # persist tweet
                 month, date = get_month_and_date(dateString)
                 new_tweet = Tweet(
@@ -70,4 +70,5 @@ def process_tweets(user_id):
                 )
                 db.session.add(new_tweet)
                 db.session.commit()
-
+        curr_user.file_status = 2
+        db.session.commit()
