@@ -2,7 +2,7 @@ from jwt import ExpiredSignatureError, DecodeError
 from functools import wraps
 from twittermemories.models import User
 from flask import request, g, jsonify
-from twittermemories.app_config import Config
+from configuration.app_config import Config
 
 
 def access_token_required(fn):

@@ -1,12 +1,17 @@
 import os
 from flask_restful import Resource
 from flask import request, g, jsonify
-from twittermemories.models import User, UserSchema
-from twittermemories import db, storage_client
+from twittermemories.models import User, UserSchema, Tweet, TweetSchema, db
+from google.cloud import storage
+from configuration.app_config import GCPConfig
 from sqlalchemy.exc import IntegrityError
 from twittermemories.view_helper_funcs import access_token_required, refresh_token_required, is_allowed_file
-from twittermemories.app_config import GCPConfig, Config
+from configuration.app_config import GCPConfig, Config
 from werkzeug.utils import secure_filename
+from celeryworker.tasks import process_tweets
+
+
+storage_client = storage.Client.from_service_account_json(GCPConfig.GCP_JSON)
 
 
 class RegisterUser(Resource):
@@ -57,6 +62,7 @@ class Refresh(Resource):
 
 
 class Feed(Resource):
+    # TODO: Update to now return the tweets instead of the file status
 
     @access_token_required
     def get(self):
@@ -69,6 +75,8 @@ class FileUpload(Resource):
     """
     NOTE: Consider options like uploading directly from client to avoid temporarily storing the file on the resource server
     """
+
+    # TODO: Currently testing and prod are using the same Google Cloud Storage Bucket
 
     @access_token_required
     def post(self):
@@ -97,8 +105,13 @@ class FileUpload(Resource):
             user.file_status = 1
             db.session.commit()
 
+            # delete file from temp file storage
             os.remove(os.path.join(Config.UPLOAD_FOLDER, filename))
+
+            # queue archive processing task
+            process_tweets.delay(g.user)
 
             return jsonify({
                 'status': 'file uploaded successfully'
             })
+

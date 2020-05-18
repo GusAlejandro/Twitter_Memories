@@ -5,6 +5,13 @@
 #.gitignore
 .DS_Store
 test.db
-gcp_account.json
-twittermemories/app_config.py
+configuration/gcp_account.json
+configuration/app_config.py
 twittermemories/TEMP_TWEET_STORAGE
+tweet.js
+archive.json
+file_test.py
+twittermemories/testing.db
+tests/test_tweet_archive.js
+celeryworker/WORKER_TEMP_TWEET_STORAGE
+test_archive.js
