@@ -3,12 +3,14 @@ from flask_restful import Api
 from configuration.app_config import Config, TestConfig
 from flask_bcrypt import Bcrypt
 from flask_marshmallow import Marshmallow
+from flask_cors import CORS
 
 
 def create_app(config_file):
     app = Flask(__name__)
     app.config.from_object(config_file)
     api = Api(app)
+    CORS(app)
 
     from twittermemories.models import db
     db.init_app(app)

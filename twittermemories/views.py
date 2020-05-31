@@ -1,4 +1,5 @@
 import os
+import json
 from flask_restful import Resource
 from flask import request, g, jsonify
 from twittermemories.models import User, UserSchema, Tweet, TweetSchema, db
@@ -17,8 +18,8 @@ storage_client = storage.Client.from_service_account_json(GCPConfig.GCP_JSON)
 class RegisterUser(Resource):
 
     def post(self):
-        username = request.values.get('username')
-        password = request.values.get('password')
+        username = request.get_json().get('username')
+        password = request.get_json().get('password')
         user_schema = UserSchema()
         try:
             new_user = User(username=username, raw_password=password)
