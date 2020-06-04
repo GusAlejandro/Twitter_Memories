@@ -34,8 +34,8 @@ class RegisterUser(Resource):
 class LoginUser(Resource):
 
     def post(self):
-        username = request.values.get('username')
-        password = request.values.get('password')
+        username = request.get_json().get('username')
+        password = request.get_json().get('password')
         user = User.query.filter_by(username=username).first()
         if user.check_password(password):
             # if username/password combo is valid, generate tokens
@@ -47,7 +47,7 @@ class LoginUser(Resource):
                 'refresh_token': refresh_token.decode('utf-8')
             })
         else:
-            return { 'response': 'INCORRECT USERNAME + PASSWORD COMBINATION'}
+            return {'Error': 'INCORRECT USERNAME + PASSWORD COMBINATION'}
 
 
 class Refresh(Resource):
