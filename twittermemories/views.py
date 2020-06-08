@@ -11,7 +11,6 @@ from configuration.app_config import GCPConfig, Config
 from werkzeug.utils import secure_filename
 from celeryworker.tasks import process_tweets
 
-
 storage_client = storage.Client.from_service_account_json(GCPConfig.GCP_JSON)
 
 
@@ -37,6 +36,10 @@ class LoginUser(Resource):
         username = request.get_json().get('username')
         password = request.get_json().get('password')
         user = User.query.filter_by(username=username).first()
+
+        if not user: 
+            return {'Error': 'INCORRECT USERNAME + PASSWORD COMBINATION'} 
+
         if user.check_password(password):
             # if username/password combo is valid, generate tokens
             access_token = User.encode_auth_token(user.user_id, 'access')
