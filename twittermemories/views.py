@@ -34,7 +34,7 @@ class RegisterUser(Resource):
             return make_response(user_schema.dump(new_user), 200)
         except IntegrityError:
             db.session.rollback()
-            return make_response({'Error': "Username is taken already"}, 403)
+            return make_response({'Error': "Username is already taken."}, 403)
 
 
 class LoginUser(Resource):
