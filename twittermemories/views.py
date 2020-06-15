@@ -1,7 +1,7 @@
 import os
 import json
 from flask_restful import Resource
-from flask import request, g, jsonify
+from flask import request, g, jsonify, make_response
 from twittermemories.models import User, UserSchema, Tweet, TweetSchema, db
 from google.cloud import storage
 from configuration.app_config import GCPConfig
@@ -14,7 +14,14 @@ from celeryworker.tasks import process_tweets
 storage_client = storage.Client.from_service_account_json(GCPConfig.GCP_JSON)
 
 
-class RegisterUser(Resource):
+class RegisterUser(Resource): 
+
+    """
+    endpoint: /register
+    parameters: 
+        - username
+        - password
+    """
 
     def post(self):
         username = request.get_json().get('username')
@@ -24,13 +31,22 @@ class RegisterUser(Resource):
             new_user = User(username=username, raw_password=password)
             db.session.add(new_user)
             db.session.commit()
-            return jsonify(user_schema.dump(new_user))
+            return make_response(user_schema.dump(new_user), 200)
         except IntegrityError:
             db.session.rollback()
-            return jsonify({'Error': "Username is taken already"})
+            return make_response({'Error': "Username is taken already"}, 403)
 
 
 class LoginUser(Resource):
+
+    # TODO: Refactor responses to incldue error codes like /register
+
+    """
+    endpoint: /login
+    parameters:
+        - username
+        - password
+    """
 
     def post(self):
         username = request.get_json().get('username')
@@ -38,19 +54,19 @@ class LoginUser(Resource):
         user = User.query.filter_by(username=username).first()
 
         if not user: 
-            return {'Error': 'INCORRECT USERNAME + PASSWORD COMBINATION'} 
+            return make_response({'Error': 'Username and password combination is incorrect.'}, 403) 
 
         if user.check_password(password):
             # if username/password combo is valid, generate tokens
             access_token = User.encode_auth_token(user.user_id, 'access')
-            # TODO: Persist refresh token in db to handle logout server-side as well (ideally we would have entire seperate auth server)
+            # TODO: Persist refresh token in db to handle logout server-side as well (ideally we would have entire seperate server for auth)
             refresh_token = User.encode_auth_token(user.user_id, 'refresh')
-            return jsonify({
+            return make_response({
                 'access_token': access_token.decode('utf-8'),
                 'refresh_token': refresh_token.decode('utf-8')
-            })
+                }, 200)
         else:
-            return {'Error': 'INCORRECT USERNAME + PASSWORD COMBINATION'}
+            return make_response({'Error': 'Username and password combination is incorrect.'}, 403)
 
 
 class Refresh(Resource):
@@ -60,9 +76,9 @@ class Refresh(Resource):
     @refresh_token_required
     def post(self):
         # when we start storing the refresh token we need to add logic to check agaisnt the db
-        return jsonify({
+        return make_response({
             'access_token': User.encode_auth_token(g.user, 'access').decode('utf-8')
-        })
+        }, 200)
 
 
 class Feed(Resource):
