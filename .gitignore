@@ -15,3 +15,5 @@ twittermemories/testing.db
 tests/test_tweet_archive.js
 celeryworker/WORKER_TEMP_TWEET_STORAGE
 test_archive.js
+.vscode/
+twittermemories/development.db

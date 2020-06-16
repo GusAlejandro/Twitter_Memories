@@ -1,7 +1,7 @@
 from jwt import ExpiredSignatureError, DecodeError
 from functools import wraps
 from twittermemories.models import User
-from flask import request, g, jsonify
+from flask import request, g, make_response
 from configuration.app_config import Config
 
 
@@ -16,14 +16,14 @@ def access_token_required(fn):
                 return fn(*args, **kwargs)
             else:
                 # wrong token type, do not allow access to resource
-                return jsonify({
-                    'status': 'wrong token type'
-                })
+                return make_response({
+                    'Error': 'wrong token type'
+                }, 401)
         except (ExpiredSignatureError, UnicodeDecodeError, DecodeError):
             # tell client the access token has expired and they need to request a new one using refresh token
-            return jsonify({
-                'status': 'expired access token, user is logged out'
-            })
+            return make_response({
+                'Error': 'Access token has expired'
+            }, 401)
     return wrapper
 
 
@@ -38,14 +38,14 @@ def refresh_token_required(fn):
                 return fn(*args, **kwargs)
             else:
                 # wrong token type, do not allow access to resource
-                return jsonify({
-                    'status': 'wrong token type'
-                })
+                return make_response({
+                    'Error': 'wrong token type'
+                }, 401)
         except (ExpiredSignatureError, UnicodeDecodeError, DecodeError):
             # tell client the access token has expired, force a log out. User must login in again
-            return jsonify({
-                'status': 'expired refresh token, user is logged out'
-            })
+            return make_response({
+                'Error': 'Refresh token is expired, user has been logged out'
+            }, 401)
     return wrapper
 
 
