@@ -7,17 +7,15 @@ import uuid
 
 db = SQLAlchemy()
 
-
 class Tweet(db.Model):
     __tablename__ = 'Tweet'
     tweet_id = db.Column(db.String, primary_key=True)
-    tweet_text = db.Column(db.Text)
-    user_id = db.Column(db.String(128), db.ForeignKey('User.user_id'), index=True)
-    month = db.Column(db.Integer, index=True)
+    user_id = db.Column(db.String, db.ForeignKey('User.user_id'), index=True)
+    month = db.Column(db.String, index=True)
     day = db.Column(db.Integer)
 
     def __repr__(self):
-        return self.user_id + ' tweed id: ' + self.tweet_id + ' month ' + self.month + ' day ' + self.day
+        return self.user_id + ' tweed id: ' + self.tweet_id + ' month ' + self.month + ' day ' + str(self.day)
 
 
 class TweetSchema(ma.SQLAlchemySchema):
@@ -26,13 +24,13 @@ class TweetSchema(ma.SQLAlchemySchema):
 
     tweet_id = ma.auto_field()
     month = ma.auto_field()
-
+    day = ma.auto_field()
 
 class User(db.Model):
     __tablename__ = 'User'
-    user_id = db.Column(db.String(128), primary_key=True, unique=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    hashedPassword = db.Column(db.String(128))
+    user_id = db.Column(db.String, primary_key=True, unique=True)
+    username = db.Column(db.String, unique=True, nullable=False)
+    hashedPassword = db.Column(db.String)
     file_status = db.Column(db.Integer, default=0)
     tweets = db.relationship('Tweet', backref='user', lazy='dynamic')
 

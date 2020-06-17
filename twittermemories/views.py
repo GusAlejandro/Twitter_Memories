@@ -83,32 +83,39 @@ class Refresh(Resource):
 
 class Feed(Resource):
     # TODO: Update to now return the tweets instead of the file status
+    # TODO: Add in parameter comment 
+    # TODO: write tests for this, setup script to populate db with data
 
     @access_token_required
     def get(self):
+        month = request.get_json().get('month')
+        date = request.get_json().get('date')
+        # TODO: add in checks to see if month and date parameters were in the request
         user_id = g.user
         user = User.query.filter_by(user_id=user_id).first()
-        return {'file_status': user.file_status}
-
+        tweet_query = Tweet.query.filter_by(user_id=user_id, month=month, day=date).all()
+        tweet_list = list(map(lambda tweet: tweet.tweet_id, tweet_query))
+        return make_response({'file_status': user.file_status, 'tweets': tweet_list}, 200)
+    
 
 class FileUpload(Resource):
-    """
-    NOTE: Consider options like uploading directly from client to avoid temporarily storing the file on the resource server
-    """
-
+    # TODO: Add in parameter comment
     # TODO: Currently testing and prod are using the same Google Cloud Storage Bucket
+    # TODO: look into how to test this, adding configs for testing
 
     @access_token_required
     def post(self):
         if 'file' not in request.files:
-            return jsonify({
-                'error': 'File not received'
-            })
+            return make_response({
+                'Error': 'File not received'
+            }, 400)
+        
         file = request.files['file']
-        if file.filename == '':
-            return jsonify({
-                'error': 'no file selected'
-            })
+        if file.filename == '' or not is_allowed_file(file.filename):
+            return make_response({
+                'Errpr': 'Invalid File Format. You must submit the tweet.js file from your Twitter archive.'
+            }, 400)
+
         if file and is_allowed_file(file.filename):
             # store file locally
             file.filename = g.user + '.json'
@@ -131,7 +138,7 @@ class FileUpload(Resource):
             # queue archive processing task
             process_tweets.delay(g.user)
 
-            return jsonify({
-                'status': 'file uploaded successfully'
-            })
+            return make_response({
+                'Status': 'File uploaded successfully'
+            }, 200)
 

@@ -8,6 +8,8 @@ from configuration.app_config import GCPConfig, Config, CeleryConfig
 
 sys.path.append(os.getcwd())
 
+# TODO: fix paths for temp file storage, it is not storing in the directory 
+# TODO: add in code to delete file from gcp storage
 
 def is_valid_date(date: str):
     # "Sat Feb 08 21:48:16 +0000 2020"
@@ -63,7 +65,6 @@ def process_tweets(user_id):
                 month, date = get_month_and_date(dateString)
                 new_tweet = Tweet(
                     tweet_id=tweet['tweet']['id'],
-                    tweet_text=tweet['tweet']['full_text'],
                     month=month,
                     day=date,
                     user= curr_user
