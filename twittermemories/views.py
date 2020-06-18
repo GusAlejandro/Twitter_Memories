@@ -19,8 +19,8 @@ class RegisterUser(Resource):
     """
     endpoint: /register
     parameters: 
-        - username
-        - password
+        - username: str
+        - password: str
     """
 
     def post(self):
@@ -38,14 +38,11 @@ class RegisterUser(Resource):
 
 
 class LoginUser(Resource):
-
-    # TODO: Refactor responses to incldue error codes like /register
-
     """
     endpoint: /login
     parameters:
-        - username
-        - password
+        - username: str
+        - password: str
     """
 
     def post(self):
@@ -71,7 +68,7 @@ class LoginUser(Resource):
 
 class Refresh(Resource):
     """
-    Receives refresh token and if valid, proceeds to generate a new access token, returns new access token
+    endpoint: /refresh
     """
     @refresh_token_required
     def post(self):
@@ -82,24 +79,37 @@ class Refresh(Resource):
 
 
 class Feed(Resource):
-    # TODO: Update to now return the tweets instead of the file status
-    # TODO: Add in parameter comment 
+    """
+    endpoint: /feed
+    parameters:
+        - month: str
+        - date: int
+    """
     # TODO: write tests for this, setup script to populate db with data
 
     @access_token_required
     def get(self):
         month = request.get_json().get('month')
         date = request.get_json().get('date')
-        # TODO: add in checks to see if month and date parameters were in the request
+
+        if not month or not date:
+            return make_response({'Error': 'Missing Request Parameters'}, 400)
+    
         user_id = g.user
         user = User.query.filter_by(user_id=user_id).first()
+        
+        # Query uses composite index of Tweet.user_id + Tweet.month that we set up in the model definition  
         tweet_query = Tweet.query.filter_by(user_id=user_id, month=month, day=date).all()
         tweet_list = list(map(lambda tweet: tweet.tweet_id, tweet_query))
         return make_response({'file_status': user.file_status, 'tweets': tweet_list}, 200)
     
 
 class FileUpload(Resource):
-    # TODO: Add in parameter comment
+    """
+    endpooint: /upload
+    parameters:
+        - file
+    """
     # TODO: Currently testing and prod are using the same Google Cloud Storage Bucket
     # TODO: look into how to test this, adding configs for testing
 
