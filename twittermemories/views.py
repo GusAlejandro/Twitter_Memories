@@ -1,5 +1,6 @@
 import os
 import json
+from flask import current_app as app
 from flask_restful import Resource
 from flask import request, g, jsonify, make_response
 from twittermemories.models import User, UserSchema, Tweet, TweetSchema, db
@@ -11,7 +12,7 @@ from configuration.app_config import GCPConfig, Config
 from werkzeug.utils import secure_filename
 from celeryworker.tasks import process_tweets
 
-storage_client = storage.Client.from_service_account_json(GCPConfig.GCP_JSON)
+
 
 
 class RegisterUser(Resource): 
@@ -130,12 +131,13 @@ class FileUpload(Resource):
             # store file locally
             file.filename = g.user + '.json'
             filename = secure_filename(file.filename)
-            file.save(os.path.join(Config.UPLOAD_FOLDER, filename))
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             # upload file to GCP
-            bucket = storage_client.bucket(GCPConfig.GCP_STORAGE_BUCKET)
+            storage_client = storage.Client.from_service_account_json(app.config['CLOUD_STORAGE'].GCP_JSON)
+            bucket = storage_client.bucket(app.config['CLOUD_STORAGE'].GCP_STORAGE_BUCKET)
             blob = bucket.blob(filename)
-            blob.upload_from_filename(os.path.join(Config.UPLOAD_FOLDER, filename))
+            blob.upload_from_filename(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             # update user file status
             user = User.query.filter_by(user_id=g.user).first()
@@ -143,7 +145,7 @@ class FileUpload(Resource):
             db.session.commit()
 
             # delete file from temp file storage
-            os.remove(os.path.join(Config.UPLOAD_FOLDER, filename))
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             # queue archive processing task
             process_tweets.delay(g.user)
