@@ -4,9 +4,7 @@ from configuration.app_config import TestConfig
 from twittermemories import create_app
 from twittermemories.models import db, User, Tweet
 from celeryworker.tasks import process_tweets
-from google.cloud import storage
-
-# TODO: change celery config so the download folder is actually the test temp tweet storage 
+from google.cloud import storage 
 
 class TestCelery(unittest.TestCase):
     
@@ -34,7 +32,7 @@ class TestCelery(unittest.TestCase):
         db.drop_all()
         os.remove(self.app.application.config['DB_PATH'])
 
-    def test_add(self):
+    def test_archive_processing(self):
         process_tweets.apply(args=('testTwitterArchive', TestConfig))
         all_tweets_query = Tweet.query.all()
         tweetID_list = list(map(lambda tweet: tweet.tweet_id, all_tweets_query))
