@@ -9,8 +9,6 @@ from configuration.app_config import GCPConfig, Config, CeleryConfig
 sys.path.append(os.getcwd())
 
 
-# TODO: add celeryconfig as parameter for processing task 
-
 def is_valid_date(date: str):
     # "Sat Feb 08 21:48:16 +0000 2020"
     months = {
@@ -33,28 +31,28 @@ def get_month_and_date(date: str):
     return date.split()[1], date.split()[2]
 
 @celery_app.task
-def process_tweets(user_id, gcpConfig=GCPConfig, app_config=Config):
+def process_tweets(user_id, app_config=Config):
     from twittermemories import create_app
     from twittermemories.models import User, UserSchema, Tweet, TweetSchema, db
     this_app = create_app(app_config)
     with this_app.app_context():
         # download tweet archive for user
-        storage_client = storage.Client.from_service_account_json(gcpConfig.GCP_JSON)
-        bucket = storage_client.bucket(gcpConfig.GCP_STORAGE_BUCKET)
+        storage_client = storage.Client.from_service_account_json(this_app.config['CLOUD_STORAGE'].GCP_JSON)
+        bucket = storage_client.bucket(this_app.config['CLOUD_STORAGE'].GCP_STORAGE_BUCKET)
         twitter_archive = bucket.blob(user_id + '.json')
-        twitter_archive.download_to_filename(CeleryConfig.TEMPSTORAGE + user_id + '.json')
+        twitter_archive.download_to_filename(this_app.config['CELERY_CONFIG'].TEMPSTORAGE + user_id + '.json')
         
         # convert archive to traversable json format
-        for line in fileinput.input(CeleryConfig.TEMPSTORAGE + user_id + '.json', inplace=True):
+        for line in fileinput.input(this_app.config['CELERY_CONFIG'].TEMPSTORAGE + user_id + '.json', inplace=True):
             if fileinput.lineno() == 1:
                 print(line.replace('window.YTD.tweet.part0 =', ''), end = '')
             else:
                 print(line, end='')
         fileinput.close()
-        
         # traverse tweets, pull out relevant info and persist instances
         curr_user = User.query.filter_by(user_id=user_id).first()
-        tweetList = json.load(open(CeleryConfig.TEMPSTORAGE + user_id + '.json', 'r'))
+        tweetList = json.load(open(this_app.config['CELERY_CONFIG'].TEMPSTORAGE + user_id + '.json', 'r'))
+        
         for tweet in tweetList:
             dateString = tweet['tweet']['created_at']
             if is_valid_date(dateString):
@@ -74,4 +72,4 @@ def process_tweets(user_id, gcpConfig=GCPConfig, app_config=Config):
 
         # delete the file from gcp storage and local storage
         twitter_archive.delete()
-        os.remove(os.path.join(CeleryConfig.TEMPSTORAGE, user_id + '.json'))
+        os.remove(os.path.join(this_app.config['CELERY_CONFIG'].TEMPSTORAGE, user_id + '.json'))

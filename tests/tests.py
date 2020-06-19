@@ -3,6 +3,7 @@ from configuration.app_config import TestConfig
 from twittermemories import create_app
 from twittermemories.models import db
 import io
+import os
 import json 
 
 # TEST_DB = 'testing.db'
@@ -20,6 +21,7 @@ class TestViews(unittest.TestCase):
     def tearDown(self):
         db.session.remove()
         db.drop_all()
+        os.remove(self.app.application.config['DB_PATH'])
 
     def test_file_status_defaults_correctly_for_new_user(self):
         response = self.app.post('/register', headers={"Content-Type": "application/json"}, data=json.dumps({"username": "bob", "password": "123pass"}))
