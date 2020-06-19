@@ -90,10 +90,10 @@ class Feed(Resource):
 
     @access_token_required
     def get(self):
-        month = request.get_json().get('month')
-        date = request.get_json().get('date')
-
-        if not month or not date:
+        try:
+            month = request.get_json().get('month')
+            date = request.get_json().get('date')
+        except AttributeError as e:
             return make_response({'Error': 'Missing Request Parameters'}, 400)
     
         user_id = g.user

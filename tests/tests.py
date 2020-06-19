@@ -57,6 +57,12 @@ class TestViews(unittest.TestCase):
         self.assertEqual(feed_response.status_code, 200)
         self.assertEqual(['TestTweet1','TestTweet3'], feed_response.json['tweets'])
 
+    def test_get_feed_no_params(self):
+        response = self.app.post('/login', headers={"Content-Type": "application/json"}, data=json.dumps({"username":"TestUser1", "password":"123"}))
+        access_token = response.get_json().get('access_token')
+        feed_response = self.app.get('/feed', headers={'Authorization': 'Bearer ' + access_token, "Content-Type": "application/json"})
+        self.assertEqual(feed_response.status_code, 400)
+
     @unittest.skip
     def test_archvie_uplaod(self):
         self.app.post('/register', data={'username': 'bob', 'password': '123pass'})
