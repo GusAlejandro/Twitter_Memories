@@ -53,7 +53,7 @@ class TestViews(unittest.TestCase):
     def test_get_feed(self):
         response = self.app.post('/login', headers={"Content-Type": "application/json"}, data=json.dumps({"username":"TestUser1", "password":"123"}))
         access_token = response.get_json().get('access_token')
-        feed_response = self.app.get('/feed', data=json.dumps({"month": "Dec", "date": 31}), headers={'Authorization': 'Bearer ' + access_token, "Content-Type": "application/json"})
+        feed_response = self.app.get('/feed', query_string={"month": "Dec", "date": 31}, headers={'Authorization': 'Bearer ' + access_token, "Content-Type": "application/json"})
         self.assertEqual(feed_response.status_code, 200)
         self.assertEqual(['TestTweet1','TestTweet3'], feed_response.json['tweets'])
 

@@ -86,16 +86,19 @@ class Feed(Resource):
         - month: str
         - date: int
     """
-    # TODO: write tests for this, setup script to populate db with data
 
     @access_token_required
     def get(self):
         try:
-            month = request.get_json().get('month')
-            date = request.get_json().get('date')
+            month = request.args.get('month')
+            date = request.args.get('date')
         except AttributeError as e:
             return make_response({'Error': 'Missing Request Parameters'}, 400)
     
+        if not month or not date:
+            return make_response({'Error': 'Missing Request Parameters'}, 400)
+
+
         user_id = g.user
         user = User.query.filter_by(user_id=user_id).first()
         
@@ -111,8 +114,7 @@ class FileUpload(Resource):
     parameters:
         - file
     """
-    # TODO: Currently testing and prod are using the same Google Cloud Storage Bucket
-    # TODO: look into how to test this, adding configs for testing
+    # TODO: No unittest, will require system test instead 
 
     @access_token_required
     def post(self):
