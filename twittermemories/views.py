@@ -1,5 +1,6 @@
 import os
 import json
+from flask import current_app as app
 from flask_restful import Resource
 from flask import request, g, jsonify, make_response
 from twittermemories.models import User, UserSchema, Tweet, TweetSchema, db
@@ -11,7 +12,7 @@ from configuration.app_config import GCPConfig, Config
 from werkzeug.utils import secure_filename
 from celeryworker.tasks import process_tweets
 
-storage_client = storage.Client.from_service_account_json(GCPConfig.GCP_JSON)
+
 
 
 class RegisterUser(Resource): 
@@ -19,8 +20,8 @@ class RegisterUser(Resource):
     """
     endpoint: /register
     parameters: 
-        - username
-        - password
+        - username: str
+        - password: str
     """
 
     def post(self):
@@ -38,14 +39,11 @@ class RegisterUser(Resource):
 
 
 class LoginUser(Resource):
-
-    # TODO: Refactor responses to incldue error codes like /register
-
     """
     endpoint: /login
     parameters:
-        - username
-        - password
+        - username: str
+        - password: str
     """
 
     def post(self):
@@ -71,7 +69,7 @@ class LoginUser(Resource):
 
 class Refresh(Resource):
     """
-    Receives refresh token and if valid, proceeds to generate a new access token, returns new access token
+    endpoint: /refresh
     """
     @refresh_token_required
     def post(self):
@@ -82,43 +80,66 @@ class Refresh(Resource):
 
 
 class Feed(Resource):
-    # TODO: Update to now return the tweets instead of the file status
+    """
+    endpoint: /feed
+    parameters:
+        - month: str
+        - date: int
+    """
 
     @access_token_required
     def get(self):
+        try:
+            month = request.args.get('month')
+            date = request.args.get('date')
+        except AttributeError as e:
+            return make_response({'Error': 'Missing Request Parameters'}, 400)
+    
+        if not month or not date:
+            return make_response({'Error': 'Missing Request Parameters'}, 400)
+
+
         user_id = g.user
         user = User.query.filter_by(user_id=user_id).first()
-        return {'file_status': user.file_status}
-
+        
+        # Query uses composite index of Tweet.user_id + Tweet.month that we set up in the model definition  
+        tweet_query = Tweet.query.filter_by(user_id=user_id, month=month, day=date).all()
+        tweet_list = list(map(lambda tweet: tweet.tweet_id, tweet_query))
+        return make_response({'file_status': user.file_status, 'tweets': tweet_list}, 200)
+    
 
 class FileUpload(Resource):
     """
-    NOTE: Consider options like uploading directly from client to avoid temporarily storing the file on the resource server
+    endpooint: /upload
+    parameters:
+        - file
     """
-
-    # TODO: Currently testing and prod are using the same Google Cloud Storage Bucket
+    # TODO: No unittest, will require system test instead 
 
     @access_token_required
     def post(self):
         if 'file' not in request.files:
-            return jsonify({
-                'error': 'File not received'
-            })
+            return make_response({
+                'Error': 'File not received'
+            }, 400)
+        
         file = request.files['file']
-        if file.filename == '':
-            return jsonify({
-                'error': 'no file selected'
-            })
+        if file.filename == '' or not is_allowed_file(file.filename):
+            return make_response({
+                'Error': 'Invalid File Format. You must submit the tweet.js file from your Twitter archive.'
+            }, 400)
+
         if file and is_allowed_file(file.filename):
             # store file locally
             file.filename = g.user + '.json'
             filename = secure_filename(file.filename)
-            file.save(os.path.join(Config.UPLOAD_FOLDER, filename))
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             # upload file to GCP
-            bucket = storage_client.bucket(GCPConfig.GCP_STORAGE_BUCKET)
+            storage_client = storage.Client.from_service_account_json(app.config['CLOUD_STORAGE'].GCP_JSON)
+            bucket = storage_client.bucket(app.config['CLOUD_STORAGE'].GCP_STORAGE_BUCKET)
             blob = bucket.blob(filename)
-            blob.upload_from_filename(os.path.join(Config.UPLOAD_FOLDER, filename))
+            blob.upload_from_filename(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             # update user file status
             user = User.query.filter_by(user_id=g.user).first()
@@ -126,12 +147,12 @@ class FileUpload(Resource):
             db.session.commit()
 
             # delete file from temp file storage
-            os.remove(os.path.join(Config.UPLOAD_FOLDER, filename))
+            os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             # queue archive processing task
             process_tweets.delay(g.user)
 
-            return jsonify({
-                'status': 'file uploaded successfully'
-            })
+            return make_response({
+                'Status': 'File uploaded successfully'
+            }, 200)
 
