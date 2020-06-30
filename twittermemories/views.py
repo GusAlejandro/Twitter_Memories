@@ -126,7 +126,7 @@ class FileUpload(Resource):
         file = request.files['file']
         if file.filename == '' or not is_allowed_file(file.filename):
             return make_response({
-                'Errpr': 'Invalid File Format. You must submit the tweet.js file from your Twitter archive.'
+                'Error': 'Invalid File Format. You must submit the tweet.js file from your Twitter archive.'
             }, 400)
 
         if file and is_allowed_file(file.filename):
