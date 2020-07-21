@@ -30,7 +30,7 @@ def access_token_required(fn):
 def refresh_token_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        token = request.headers.get('authorization').split(" ")[1]
+        token = request.headers.get('Authorization').split(" ")[1]
         try:
             payload = User.decode_auth_token(token)
             if payload['token_type'] == 'refresh':

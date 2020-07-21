@@ -72,7 +72,7 @@ class Refresh(Resource):
     endpoint: /refresh
     """
     @refresh_token_required
-    def post(self):
+    def get(self):
         # when we start storing the refresh token we need to add logic to check agaisnt the db
         return make_response({
             'access_token': User.encode_auth_token(g.user, 'access').decode('utf-8')
