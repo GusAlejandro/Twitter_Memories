@@ -9,6 +9,10 @@ def access_token_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
         token = request.headers.get('Authorization').split(" ")[1]
+        if not token or 'null' in token:
+            return make_response({
+                'Error': 'Request does not include token'
+            }, 401)
         try:
             payload = User.decode_auth_token(token)
             if payload['token_type'] == 'access':
