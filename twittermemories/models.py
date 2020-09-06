@@ -44,7 +44,7 @@ class User(db.Model):
 
     @staticmethod
     def hash_password(raw_password):
-        return bcrypt.generate_password_hash(raw_password)
+        return bcrypt.generate_password_hash(raw_password).decode('utf8')
 
     def check_password(self, raw_password):
         return bcrypt.check_password_hash(self.hashedPassword, raw_password)
