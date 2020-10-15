@@ -9,7 +9,8 @@ db = SQLAlchemy()
 
 class Tweet(db.Model):
     __tablename__ = 'Tweet'
-    tweet_id = db.Column(db.String, primary_key=True)
+    unique_tweet_id = db.Column(db.String, primary_key=True, unique=True)
+    tweet_id = db.Column(db.String)
     user_id = db.Column(db.String, db.ForeignKey('User.user_id'), index=True)
     month = db.Column(db.String, index=True)
     day = db.Column(db.Integer)
@@ -17,11 +18,16 @@ class Tweet(db.Model):
     def __repr__(self):
         return self.user_id + ' tweed id: ' + self.tweet_id + ' month ' + self.month + ' day ' + str(self.day)
 
+    def __init__(self, **kwargs):
+        super(Tweet, self).__init__(**kwargs)
+        self.unique_tweet_id = str(uuid.uuid4())
+
 
 class TweetSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Tweet
 
+    unique_tweet_id = ma.auto_field()
     tweet_id = ma.auto_field()
     month = ma.auto_field()
     day = ma.auto_field()

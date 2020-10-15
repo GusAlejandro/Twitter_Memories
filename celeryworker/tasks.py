@@ -8,6 +8,11 @@ from configuration.app_config import GCPConfig, Config, CeleryConfig
 
 sys.path.append(os.getcwd())
 
+def is_retweet(tweet: dict):
+    starts_with_RT = tweet['tweet']['full_text'][:2] == 'RT'
+    user_mentions_not_empty = tweet['tweet']['entities']['user_mentions'] != []
+    return starts_with_RT and user_mentions_not_empty
+
 
 def is_valid_date(date: str):
     # "Sat Feb 08 21:48:16 +0000 2020"
@@ -53,10 +58,9 @@ def process_tweets(user_id, app_config=Config):
         curr_user = User.query.filter_by(user_id=user_id).first()
         tweetList = json.load(open(this_app.config['CELERY_CONFIG'].TEMPSTORAGE + user_id + '.json', 'r'))
         
-        for tweet in tweetList:
+        for tweet in tweetList: 
             dateString = tweet['tweet']['created_at']
-            if is_valid_date(dateString):
-                # get current user
+            if is_valid_date(dateString) and not is_retweet(tweet):
                 # persist tweet
                 month, date = get_month_and_date(dateString)
                 new_tweet = Tweet(
